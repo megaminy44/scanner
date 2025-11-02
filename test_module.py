@@ -1,67 +1,73 @@
 #!/usr/bin/env python3
 """
-Unit tests for Port Scanner project
+Unit tests for SHA-1 Password Cracker project
 """
 
 import sys
 import os
 
-# Add the current directory to the path so we can import port_scanner
+# Add current directory to path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from port_scanner import get_open_ports
+from password_cracker import crack_sha1_hash
 
-def test_basic_functionality():
-    """Test basic port scanning functionality"""
-    print("Testing basic functionality...")
+def test_crack_no_salts():
+    """Test password cracking without salts"""
+    print("Testing without salts...")
     
-    # Test with known host
-    result = get_open_ports("scanme.nmap.org", [20, 80])
-    assert isinstance(result, list), "Should return a list"
-    print("✓ Basic functionality test passed")
-
-def test_verbose_mode():
-    """Test verbose mode output"""
-    print("Testing verbose mode...")
+    # Test case 1
+    result = crack_sha1_hash("b305921a3723cd5d70a375cd21a61e60aabb84ec")
+    assert result == "sammy123", f"Expected 'sammy123', got '{result}'"
+    print("✓ Test 1 passed")
     
-    result = get_open_ports("scanme.nmap.org", [20, 80], True)
-    assert isinstance(result, str), "Verbose mode should return string"
-    assert "Open ports for" in result, "Should contain header"
-    print("✓ Verbose mode test passed")
-
-def test_invalid_hostname():
-    """Test error handling for invalid hostname"""
-    print("Testing invalid hostname...")
+    # Test case 2
+    result = crack_sha1_hash("c7ab388a5ebefbf4d550652f1eb4d833e5316e3e")
+    assert result == "abacab", f"Expected 'abacab', got '{result}'"
+    print("✓ Test 2 passed")
     
-    result = get_open_ports("invalidhostname.xyz", [20, 80])
-    assert result == "Error: Invalid hostname", "Should return invalid hostname error"
-    print("✓ Invalid hostname test passed")
+    # Test case 3
+    result = crack_sha1_hash("5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8")
+    assert result == "password", f"Expected 'password', got '{result}'"
+    print("✓ Test 3 passed")
 
-def test_invalid_ip():
-    """Test error handling for invalid IP"""
-    print("Testing invalid IP...")
+def test_crack_with_salts():
+    """Test password cracking with salts"""
+    print("Testing with salts...")
     
-    result = get_open_ports("999.999.999.999", [20, 80])
-    assert result == "Error: Invalid IP address", "Should return invalid IP error"
-    print("✓ Invalid IP test passed")
-
-def test_port_range():
-    """Test port range scanning"""
-    print("Testing port range...")
+    # Test case 1
+    result = crack_sha1_hash("53d8b3dc9d39f0184144674e310185e41a87ffd5", use_salts=True)
+    assert result == "superman", f"Expected 'superman', got '{result}'"
+    print("✓ Test 1 passed")
     
-    result = get_open_ports("scanme.nmap.org", [22, 23])
-    # At least port 22 (SSH) should be open on scanme.nmap.org
-    assert 22 in result, "Port 22 should be open on scanme.nmap.org"
-    print("✓ Port range test passed")
+    # Test case 2
+    result = crack_sha1_hash("da5a4e8cf89539e66097acd2f8af128acae2f8ae", use_salts=True)
+    assert result == "q1w2e3r4t5", f"Expected 'q1w2e3r4t5', got '{result}'"
+    print("✓ Test 2 passed")
+    
+    # Test case 3
+    result = crack_sha1_hash("ea3f62d498e3b98557f9f9cd0d905028b3b019e1", use_salts=True)
+    assert result == "bubbles1", f"Expected 'bubbles1', got '{result}'"
+    print("✓ Test 3 passed")
 
-def run_tests():
-    """Run all tests"""
+def test_password_not_in_database():
+    """Test handling of passwords not in database"""
+    print("Testing non-existent passwords...")
+    
+    # Random SHA-1 hash that shouldn't match anything
+    fake_hash = "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2"
+    result = crack_sha1_hash(fake_hash)
+    assert result == "PASSWORD NOT IN DATABASE", f"Expected 'PASSWORD NOT IN DATABASE', got '{result}'"
+    print("✓ Test passed")
+
+def run_all_tests():
+    """Run all test cases"""
+    print("Running SHA-1 Password Cracker Tests")
+    print("=" * 40)
+    
     try:
-        test_basic_functionality()
-        test_verbose_mode()
-        test_invalid_hostname()
-        test_invalid_ip()
-        test_port_range()
+        test_crack_no_salts()
+        test_crack_with_salts()
+        test_password_not_in_database()
         print("\n🎉 All tests passed!")
         return True
     except AssertionError as e:
@@ -72,4 +78,4 @@ def run_tests():
         return False
 
 if __name__ == "__main__":
-    run_tests()
+    run_all_tests()
